@@ -1,0 +1,35 @@
+[
+    {
+        "key": "7EJazPSeYuJg3z7gvfY8zhKDcBY6RYkgk1KmGJ4uPf15",
+        "name": "Launchpad 1",
+        "projectLogo": "https://cryptologos.cc/logos/dogecoin-doge-logo.png",
+        "links": {
+            "web": { "name": "Website", "url": "https://google.com" },
+            "x": { "name": "X", "url": "https://x.com/FushumaChain/" },
+            "telegram": { "name": "Instagram", "url": "https://instagram.com/https://t.me/FushumaChain" }
+        },
+        "description": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."
+    },
+    {
+        "key": "7EZEpz2aWVYh3X4tgGiBnM7xxY2gmHzbTpiyJeuyYvE6",
+        "name": "Defined in JSON",
+        "projectLogo": "https://cryptologos.cc/logos/solana-sol-logo.png",
+        "links": {
+            "web": { "name": "Website", "url": "https://google.com" },
+            "x": { "name": "X", "url": "https://x.com/FushumaChain/" },
+            "telegram": { "name": "Instagram", "url": "https://instagram.com/https://t.me/FushumaChain" }
+        },
+        "description": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."
+    },
+    {
+        "key": "3Ji7fXgUGrQxzRkAUT1VaC2gkKVT56WWHRZcTzaMbq7F",
+        "name": "Launchpad 2",
+        "projectLogo": "https://cryptologos.cc/logos/ethereum-eth-logo.png",
+        "links": {
+            "web": { "name": "Website", "url": "https://google.com" },
+            "x": { "name": "X", "url": "https://x.com/FushumaChain/" },
+            "telegram": { "name": "Instagram", "url": "https://instagram.com/https://t.me/FushumaChain" }
+        },
+        "description": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."
+    }
+]
