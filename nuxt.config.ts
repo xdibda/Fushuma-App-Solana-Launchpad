@@ -1,5 +1,6 @@
 import tailwindcss from '@tailwindcss/vite';
 import { NodeGlobalsPolyfillPlugin } from '@esbuild-plugins/node-globals-polyfill';
+import { nodePolyfills } from 'vite-plugin-node-polyfills';
 
 export default defineNuxtConfig({
     modules: ['@nuxt/ui', '@pinia/nuxt'],
@@ -37,7 +38,7 @@ export default defineNuxtConfig({
     },
 
     vite: {
-        plugins: [tailwindcss()],
+        plugins: [tailwindcss(), nodePolyfills({ include: ['stream'], globals: { process: true, Buffer: true } })],
         // Handle React dependency issues
         optimizeDeps: {
             esbuildOptions: {
@@ -48,7 +49,7 @@ export default defineNuxtConfig({
                     NodeGlobalsPolyfillPlugin({
                         process: true,
                         buffer: true,
-                    }),
+                    })
                 ],
             },
             include: ['@solana/web3.js'],

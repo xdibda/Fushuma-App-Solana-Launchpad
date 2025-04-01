@@ -45,6 +45,7 @@
     "buffer": "^6.0.3"
   },
   "devDependencies": {
-    "prettier": "^3.5.3"
+    "prettier": "^3.5.3",
+    "vite-plugin-node-polyfills": "^0.22.0"
   }
 }
