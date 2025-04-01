@@ -49,7 +49,7 @@
                     <!-- Right Side Tools -->
                     <div class="flex items-center space-x-4">
                         <!-- Color Theme Toggle -->
-                        <button
+<!--                        <button
                             class="p-2 rounded-full flex items-center cursor-pointer hover:brightness-125 dark:hover:bg-gray-800 transition-colors duration-300"
                             @click="toggleColorMode"
                         >
@@ -59,7 +59,7 @@
                                 class="text-gray-300 text-xl w-5 h-5"
                             />
                             <Icon v-else name="heroicons:moon" class="text-gray-700 text-xl w-5 h-5" />
-                        </button>
+                        </button>-->
 
                         <!-- Wallet Connect Button -->
                         <ConnectButton />

@@ -28,7 +28,7 @@ export default defineNuxtConfig({
                 { rel: 'preconnect', href: 'https://fonts.googleapis.com' },
                 { rel: 'preconnect', href: 'https://fonts.gstatic.com', crossorigin: '' },
                 { rel: 'stylesheet', href: 'https://use.typekit.net/ygo0fdl.css' },
-               
+
                 { rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' },
             ],
         },
@@ -54,7 +54,7 @@ export default defineNuxtConfig({
     },
 
     colorMode: {
-        preference: 'system',
+        preference: 'light',
         fallback: 'light',
         classSuffix: '',
     },
