@@ -17,8 +17,8 @@ export class Metaplex {
     connection?: Connection;
 
     constructor() {
-        if (import.meta.env.VITE_BLOCKCHAIN_CONNECTION_CLUSTER !== undefined) {
-            this.connection = new Connection(import.meta.env.VITE_BLOCKCHAIN_CONNECTION_CLUSTER);
+        if (import.meta.env.VITE_BLOCKCHAIN_CONNECTION_RPC !== undefined) {
+            this.connection = new Connection(import.meta.env.VITE_BLOCKCHAIN_CONNECTION_RPC);
         }
     }
 

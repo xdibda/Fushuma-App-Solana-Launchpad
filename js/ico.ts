@@ -24,9 +24,9 @@ export class SolanaIcoLaunchpad {
         }
 
         await setClusterConfig(
-            import.meta.env.VITE_BLOCKCHAIN_CLUSTER,
+            import.meta.env.VITE_BLOCKCHAIN_CONNECTION_CLUSTER,
             anchorWallet.value as Wallet,
-            import.meta.env.VITE_BLOCKCHAIN_RPC,
+            import.meta.env.VITE_BLOCKCHAIN_CONNECTION_RPC,
         );
     }
 
