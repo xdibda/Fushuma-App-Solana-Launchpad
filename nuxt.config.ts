@@ -1,5 +1,4 @@
 import tailwindcss from '@tailwindcss/vite';
-import { NodeGlobalsPolyfillPlugin } from '@esbuild-plugins/node-globals-polyfill';
 import { nodePolyfills } from 'vite-plugin-node-polyfills';
 
 export default defineNuxtConfig({
@@ -44,13 +43,7 @@ export default defineNuxtConfig({
             esbuildOptions: {
                 define: {
                     global: 'globalThis',
-                },
-                plugins: [
-                    NodeGlobalsPolyfillPlugin({
-                        process: true,
-                        buffer: true,
-                    })
-                ],
+                }
             },
             include: ['@solana/web3.js'],
             exclude: ['react-dom'],
