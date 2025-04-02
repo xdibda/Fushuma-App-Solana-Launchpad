@@ -42,10 +42,7 @@
                             </h1>
                         </ClientOnly>
 
-                        <AppStateCard v-if="!hasConnectedWallet" class="mt-6 text-center"
-                            >Please connect your wallet</AppStateCard
-                        >
-                        <AppStateCard error class="mt-6 text-center" v-else-if="data.fetched && data.error"
+                        <AppStateCard error class="mt-6 text-center" v-if="data.fetched && data.error"
                             >Failed to load data</AppStateCard
                         >
 
@@ -56,7 +53,7 @@
                         </AppStateCard>
 
                         <div
-                            v-if="data.fetched && data.data?.length && !data.error && hasConnectedWallet"
+                            v-if="data.fetched && data.data?.length && !data.error"
                             class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 my-12"
                         >
                             <AppLaunchpadCard
@@ -66,14 +63,6 @@
                                 :data="item"
                             />
                         </div>
-
-                        <!-- TABLE ALTERNATIVE
-                         <AppTable
-                            :data="data.data"
-                            v-if="data.fetched && data.data?.length && !data.error && hasConnectedWallet"
-                            data-aos="fade-down"
-                            class="mt-12 w-fit"
-                        /> -->
                     </div>
                 </div>
             </div>
@@ -117,18 +106,19 @@
 
     const fetchData = async () => {
         try {
-            if (hasConnectedWallet.value) {
-                const icos = await SolanaIcoLaunchpad.getAllIco({});
+            const ignoredIcos = ['GhtTs6TvVJTUYUAeAP2vFMX26y8ZRY6eEsUdmzdNuLuJ', 'J84vLC7N9AF2WD2JLZJZMhcdjzSqtCu3wyt5NeiqACLE'];
 
-                icos.forEach((pitch: any) => {
-                    pitch.data.startDate *= 1000;
-                    pitch.data.endDate *= 1000;
-                });
+            const icos = await SolanaIcoLaunchpad.getAllIco({});
+            const filteredIcos = icos.filter((ico: IIcoInfoWithKey) => !ignoredIcos.includes(ico.key));
 
-                icos.sort((a, b) => (a.data.startDate > b.data.startDate ? -1 : 1));
+            filteredIcos.forEach((pitch: any) => {
+                pitch.data.startDate *= 1000;
+                pitch.data.endDate *= 1000;
+            });
 
-                data.value.setData(icos);
-            }
+            filteredIcos.sort((a, b) => (a.data.startDate > b.data.startDate ? -1 : 1));
+
+            data.value.setData(filteredIcos);
         } catch (e: any) {
             data.value.setError();
         }

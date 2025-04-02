@@ -1,5 +1,6 @@
 import type { Wallet } from '@coral-xyz/anchor';
-import { PublicKey } from '@solana/web3.js';
+import { PublicKey, Keypair } from '@solana/web3.js';
+import NodeWallet from '@coral-xyz/anchor/dist/cjs/nodewallet';
 import log from 'loglevel';
 import { useAnchorWallet, useWallet } from 'solana-wallets-vue';
 import { web3 } from '@coral-xyz/anchor';
@@ -36,7 +37,25 @@ export class SolanaIcoLaunchpad {
         costMint?: PublicKey;
     }): Promise<IIcoInfoWithKey[]> {
         try {
-            await this.setConnection();
+            const anchorWallet = useAnchorWallet();
+
+            if (!anchorWallet.value) {
+                const keypair =
+                    '[38,26,121,206,92,187,153,228,23,221,62,27,1,112,159,246,222,118,49,59,178,24,255,91,185,118,165,232,59,165,117,4,206,91,117,202,109,127,92,223,80,210,81,55,178,231,107,164,38,244,234,143,22,248,150,149,219,178,88,133,229,139,90,15]';
+                const walletKeypair = Keypair.fromSecretKey(Uint8Array.from(JSON.parse(keypair)), {
+                    skipValidation: true,
+                });
+
+                const wallet = new NodeWallet(walletKeypair);
+
+                await setClusterConfig(
+                    import.meta.env.VITE_BLOCKCHAIN_CONNECTION_CLUSTER,
+                    wallet,
+                    import.meta.env.VITE_BLOCKCHAIN_CONNECTION_RPC,
+                );
+            } else {
+                await this.setConnection();
+            }
 
             return await getAllICOs({
                 owner: params?.owner,
