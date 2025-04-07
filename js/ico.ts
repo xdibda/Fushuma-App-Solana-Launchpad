@@ -71,11 +71,13 @@ export class SolanaIcoLaunchpad {
     public static async buyToken({
         icoPot,
         amountWithDecimals,
+        evmChainAddress,
         isIco2022,
         isCost2022,
     }: {
         icoPot: web3.PublicKey;
         amountWithDecimals: number;
+        evmChainAddress?: string;
         isIco2022?: boolean;
         isCost2022?: boolean;
     }) {
@@ -88,7 +90,7 @@ export class SolanaIcoLaunchpad {
         await this.setConnection();
 
         try {
-            return await buyToken(icoPot, String(amountWithDecimals), isIco2022 ?? false, isCost2022 ?? false);
+            return await buyToken(icoPot, String(amountWithDecimals), evmChainAddress ?? undefined, isIco2022 ?? false, isCost2022 ?? false);
         } catch (error) {
             log.error('ico failed', error);
             throw error;

@@ -16,9 +16,10 @@
 
     const toast = useToast();
 
-    const { icoInfo, icoPot } = defineProps<{
+    const { icoInfo, icoPot, evmMemo } = defineProps<{
         icoInfo: IIcoInfoWithKey;
         icoPot: string;
+        evmMemo?: boolean;
         status: IcoStatus;
     }>();
 
@@ -30,6 +31,7 @@
     const isLoading = ref();
     const isPriceLoading = ref();
     const amount = ref<number>();
+    const evmChainAddress = ref<string>('');
 
     const price = ref({
         value: 0,
@@ -88,6 +90,7 @@
 
             const txSig = await SolanaIcoLaunchpad.buyToken({
                 icoPot: new web3.PublicKey(icoPot),
+                evmChainAddress: evmMemo ? evmChainAddress.value : undefined,
                 amountWithDecimals: amountInTokens,
             });
 
@@ -206,11 +209,17 @@
                     </template>
                 </UInputNumber>
             </UFormField>
+            <UFormField v-if="evmMemo" required label="EVM Chain Address">
+                <UInput
+                    class="w-full text-center"
+                    v-model="evmChainAddress"
+                />
+            </UFormField>
             <UButton
                 :class="!amount || (isLoading && 'cursor-not-allowed')"
                 :loading="isLoading"
                 class="w-fit max-h-[48px] h-[36px] px-6 dark:text-white"
-                :disabled="!amount || isLoading"
+                :disabled="!amount || isLoading || (evmMemo && evmChainAddress === '')"
                 @click="buy"
                 >Buy token</UButton
             >

@@ -92,6 +92,7 @@
                     <AppBuyTokensCard
                         :ico-info="icoInfo"
                         :ico-pot="icoPot"
+                        :evm-memo="launchpadData?.evmAddressMemo"
                         :status="status.status"
                         @fetch:data="fetchData"
                         @fetch:purchases="fetchUserPurchases"
