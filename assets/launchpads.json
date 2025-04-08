@@ -43,5 +43,20 @@
             "telegram": {}
         },
         "description": "Whaleden is a next-gen storytelling platform that fuses comic publishing with Web3 and AI, ushering in a new era of community-driven IP creation. By harnessing blockchain technology, Whaleden enables transparent project funding and fair revenue sharing through tokenized IP—accessed via the WHALE token. The platform empowers creators, brands, and fans to co-create and co-own stories that can evolve into full-fledged franchises spanning comics, games, and animation—powering a decentralized, creator-first entertainment ecosystem."
+    },
+    {
+        "key": "7GYVDrcMUFESvhETvMFJ7ZmUeuucTmAttX8jdvd1z4ZV",
+        "name": "Fushuma",
+        "projectLogo": "https://file.dexlab.space/file/484c6e1f5bbd4af585bc7a6498c06043",
+        "links": {
+            "web": { "name": "Website", "url": "https://fushuma.com/" },
+            "x": { "name": "X", "url":  "https://x.com/FushumaChain"},
+            "telegram": {
+                "name": "Telegram",
+                "url": "https://t.me/FushumaChain"
+            }
+        },
+        "evmAddressMemo": true,
+        "description": "Fushuma brings decentralization back to blockchain, establishing a sustainable ecosystem where investors, developers, and the community share equal power."
     }
 ]
