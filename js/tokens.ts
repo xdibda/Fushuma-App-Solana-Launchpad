@@ -8,5 +8,5 @@ export const convertTokenIfAvailable = (token: string) => {
 };
 
 export const convertTokenIfAvailableWithFormatting = (token: string) => {
-    return TokenAddress.has(token) ? TokenAddress.get(token) : token.slice(0, 8) + '...' + token.slice(-4);
+    return TokenAddress.has(token) ? TokenAddress.get(token) : token.slice(0, 4) + '...' + token.slice(-4);
 };

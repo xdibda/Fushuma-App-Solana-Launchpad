@@ -2,40 +2,17 @@
     import AppSubtitle from '~/components/AppSubtitle.vue';
     import type { IIcoInfoWithKey } from '~/types/Ico';
     import { formatDate, formatNumber, IcoStatus } from '~/js/utils';
-    import { SolanaIcoLaunchpad } from '~/js/ico';
-    import * as web3 from '@solana/web3.js';
     import { DataWrapper } from '~/types/DataWrapper';
 
-    const { icoInfo, icoPot, status } = defineProps<{
+    const { icoInfo, status, currentPrice } = defineProps<{
         icoInfo: IIcoInfoWithKey;
-        icoPot: string;
         status: IcoStatus;
+        currentPrice: DataWrapper<number>;
     }>();
 
     const soldTokensPercentage = computed(() => {
         return (icoInfo.data.totalSold / icoInfo.data.amount) * 100;
     });
-
-    const currentPrice = ref(new DataWrapper<number>());
-
-    onMounted(() => {
-        fetchCurrentPrice();
-    });
-
-    const fetchCurrentPrice = async () => {
-        if (status === IcoStatus.Live || status === IcoStatus.Upcoming) {
-            try {
-                const { value } = await SolanaIcoLaunchpad.getPurchaseAmount({
-                    icoPot: new web3.PublicKey(icoPot),
-                    amount: icoInfo.data.icoDecimals,
-                });
-
-                currentPrice.value.setData(value / icoInfo.data.icoDecimals);
-            } catch (e) {
-                currentPrice.value.setError();
-            }
-        }
-    };
 </script>
 
 <template>
@@ -55,7 +32,11 @@
 
                 <p v-if="status !== IcoStatus.Live && status !== IcoStatus.Upcoming">-</p>
                 <AppSpinner v-else-if="!currentPrice.fetched" class="mt-1.5" :size="2" />
-                <Icon v-else-if="currentPrice.error" name="lucide:octagon-x" class="text-white text-xl w-4 h-4" />
+                <Icon
+                    v-else-if="currentPrice.error || currentPrice.data === null"
+                    name="lucide:octagon-x"
+                    class="text-white text-xl w-4 h-4"
+                />
                 <p v-else class="tracking-tight mt-1 font-medium">
                     {{ formatNumber(currentPrice.data, icoInfo.data.icoDecimals.toString().length - 1) }}
                 </p>

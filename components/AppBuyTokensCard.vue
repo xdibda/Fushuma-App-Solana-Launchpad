@@ -4,8 +4,9 @@
     import * as web3 from '@solana/web3.js';
     import { Metaplex } from '~/js/metaplex';
     import { useBalanceStore } from '@/store/balances';
-    import { formatNumber, IcoStatus } from '~/js/utils';
+    import { IcoStatus } from '~/js/utils';
     import { convertTokenIfAvailableWithFormatting } from '~/js/tokens';
+    import type { DataWrapper } from '~/types/DataWrapper';
 
     const balanceStore = useBalanceStore();
 
@@ -16,11 +17,12 @@
 
     const toast = useToast();
 
-    const { icoInfo, icoPot, evmMemo } = defineProps<{
+    const { icoInfo, icoPot, evmMemo, currentPrice } = defineProps<{
         icoInfo: IIcoInfoWithKey;
         icoPot: string;
         evmMemo?: boolean;
         status: IcoStatus;
+        currentPrice: DataWrapper<number>;
     }>();
 
     const emits = defineEmits<{
@@ -30,7 +32,11 @@
 
     const isLoading = ref();
     const isPriceLoading = ref();
-    const amount = ref<number>();
+    const isSetPurchasePrice = ref<boolean>(false);
+
+    const purchaseAmount = ref<number>();
+    const purchasePrice = ref<number>();
+
     const evmChainAddress = ref<string>('');
 
     const price = ref({
@@ -44,18 +50,18 @@
     });
 
     const bonusProgressValue = computed(() => {
-        if (!icoInfo.data || !amount.value) return 0;
-        return Math.min((amount.value / tokensToPurchase.value) * 100, 100);
+        if (!icoInfo.data || !purchaseAmount.value) return 0;
+        return Math.min((purchaseAmount.value / tokensToPurchase.value) * 100, 100);
     });
 
-    const getPrice = async () => {
-        if (amount.value) {
+    const getPrice = async (tokensAmount?: number) => {
+        if (tokensAmount) {
             isPriceLoading.value = true;
 
             try {
                 const p = await SolanaIcoLaunchpad.getPurchaseAmount({
                     icoPot: new web3.PublicKey(icoPot),
-                    amount: Number(amount.value * icoInfo.data!.icoDecimals),
+                    amount: Number(tokensAmount * icoInfo.data!.icoDecimals),
                 });
 
                 price.value = {
@@ -63,24 +69,34 @@
                     value: p.value / icoInfo.data!.icoDecimals,
                 };
 
-                if (price.value.availableAmount < amount.value) {
-                    amount.value = price.value.availableAmount;
-                }
+                purchaseAmount.value = price.value.availableAmount;
+                purchasePrice.value = price.value.value;
             } finally {
                 isPriceLoading.value = false;
             }
         }
     };
 
-    watch(amount, getPrice, { immediate: true });
+    watch(purchaseAmount, () => getPrice(purchaseAmount.value), { immediate: true });
+
+    watch(
+        purchasePrice,
+        () => {
+            if (purchasePrice.value && currentPrice.data) {
+                const totalPriceDecimals = purchasePrice.value;
+                const tokensAmount = Math.round(totalPriceDecimals / currentPrice.data);
+                getPrice(tokensAmount);
+            }
+        },
+        { immediate: true },
+    );
 
     const buy = async () => {
-        if (!amount.value) return;
+        if (!price.value.availableAmount) return;
 
         isLoading.value = true;
-        try {
-            const amountInTokens = Number(amount.value) * icoInfo.data!.icoDecimals;
 
+        try {
             toast.add({
                 title: 'Preparing transaction',
                 icon: 'i-lucide-info',
@@ -91,7 +107,7 @@
             const txSig = await SolanaIcoLaunchpad.buyToken({
                 icoPot: new web3.PublicKey(icoPot),
                 evmChainAddress: evmMemo ? evmChainAddress.value : undefined,
-                amountWithDecimals: amountInTokens,
+                amountWithDecimals: price.value.availableAmount * icoInfo.data!.icoDecimals,
             });
 
             toast.add({
@@ -116,6 +132,7 @@
             emits('fetch:purchases');
             fetchBalances();
             getPrice();
+            resetValues();
         } catch (e) {
             toast.add({
                 title: 'Uh oh! Something went wrong.',
@@ -135,13 +152,30 @@
     const tokensToPurchase = computed(() => {
         return (icoInfo.data.amount / icoInfo.data.icoDecimals) * (icoInfo.data?.bonusActivator / 100 / 100);
     });
+
+    const isStableSale = computed(() => {
+        return icoInfo.data.endPrice == BigInt(0);
+    });
+
+    const resetValues = () => {
+        purchaseAmount.value = undefined;
+        purchasePrice.value = undefined;
+        price.value.availableAmount = 0;
+        price.value.value = 0;
+    };
 </script>
 
 <template>
     <div class="bg-white shadow-sm py-6 px-4 space-y-3">
         <AppSubtitle class="mb-5" title="Buy token" />
 
-        <p class="text-sm text-black/60 dark:text-white/50">Please specify the amount of tokens you wish to purchase</p>
+        <p v-if="isStableSale" class="text-sm mb-6 text-black/60 dark:text-white/50">
+            Please specify the amount of tokens you wish to purchase or the buy amount.
+        </p>
+        <p v-else class="text-sm text-black/60 mb-6 dark:text-white/50">
+            Please specify the amount of tokens you wish to purchase. Buy amount is not available for dynamic token
+            prices.
+        </p>
 
         <div
             v-if="status === IcoStatus.SoldOut"
@@ -175,54 +209,104 @@
             <span>Sale is closed</span>
         </div>
 
-        <div v-else class="w-full md:items-end md:grid flex flex-col grid-cols-3 gap-3">
-            <UFormField label="Amount" required number>
-                <UInputNumber class="w-full" :step="minTokenAmount" :min="minTokenAmount" v-model="amount">
-                    <template #decrement>
-                        <span></span>
-                    </template>
+        <div v-else>
+            <div v-if="isStableSale" class="border py-1.5 px-4 -mx-4 border-gray-100 flex items-center my-6">
+                <p class="text-sm mr-3 block font-medium text-(--ui-text)">Buy Amount</p>
+                <USwitch v-model="isSetPurchasePrice" @update:model-value="resetValues" label="Pay Amount" />
+            </div>
 
-                    <template #increment>
-                        <span class="px-3">{{ convertTokenIfAvailableWithFormatting(icoInfo.data.icoMint) }}</span>
-                    </template>
-                </UInputNumber>
-            </UFormField>
-            <UFormField label="Price">
-                <UInputNumber
-                    class="w-full text-center"
-                    :format-options="{
-                        roundingMode: 'expand',
-                        roundingPriority: 'morePrecision',
-                    }"
-                    :loading="true"
-                    variant="subtle"
-                    readonly
-                    v-model="price.value"
+            <div class="w-full md:items-end md:grid flex max-w-2/3 flex-col grid-cols-3 gap-3">
+                <UFormField v-if="isSetPurchasePrice" label="Pay Amount" required number>
+                    <UInputNumber
+                        class="w-full"
+                        :step="minTokenAmount"
+                        :min="minTokenAmount"
+                        v-model="purchasePrice"
+                        :format-options="{
+                            maximumFractionDigits: 9,
+                        }"
+                    >
+                        <template #decrement>
+                            <span />
+                        </template>
+                        <template #increment>
+                            <span class="px-1">{{ convertTokenIfAvailableWithFormatting(icoInfo.data.costMint) }}</span>
+                        </template>
+                    </UInputNumber>
+                </UFormField>
+
+                <UFormField v-if="isSetPurchasePrice" label="You Receive">
+                    <UInputNumber
+                        class="w-full text-center"
+                        :format-options="{
+                            roundingMode: 'expand',
+                            roundingPriority: 'morePrecision',
+                        }"
+                        variant="subtle"
+                        readonly
+                        v-model="price.availableAmount"
+                    >
+                        <template #decrement>
+                            <span />
+                        </template>
+                        <template #increment>
+                            <AppSpinner v-if="isPriceLoading" :size="2" class="ml-2" />
+                            <span v-else class="px-1">{{
+                                convertTokenIfAvailableWithFormatting(icoInfo.data.icoMint)
+                            }}</span>
+                        </template>
+                    </UInputNumber>
+                </UFormField>
+
+                <UFormField v-if="!isSetPurchasePrice" label="Buy Amount" required number>
+                    <UInputNumber class="w-full" type="number" v-model="purchaseAmount">
+                        <template #decrement>
+                            <span />
+                        </template>
+                        <template #increment>
+                            <span class="px-1">{{ convertTokenIfAvailableWithFormatting(icoInfo.data.icoMint) }}</span>
+                        </template>
+                    </UInputNumber>
+                </UFormField>
+
+                <UFormField v-if="!isSetPurchasePrice" label="You Pay">
+                    <UInputNumber
+                        class="w-full text-center"
+                        :format-options="{
+                            roundingMode: 'expand',
+                            roundingPriority: 'morePrecision',
+                        }"
+                        variant="subtle"
+                        readonly
+                        v-model="price.value"
+                    >
+                        <template #decrement>
+                            <span />
+                        </template>
+                        <template #increment>
+                            <AppSpinner v-if="isPriceLoading" :size="2" class="ml-2" />
+                            <span v-else class="px-1">{{
+                                convertTokenIfAvailableWithFormatting(icoInfo.data.costMint)
+                            }}</span>
+                        </template>
+                    </UInputNumber>
+                </UFormField>
+                <UFormField v-if="evmMemo" required label="EVM Chain Address">
+                    <UInput class="w-full text-center" v-model="evmChainAddress" />
+                </UFormField>
+                <UButton
+                    :class="!purchaseAmount || (isLoading && 'cursor-not-allowed')"
+                    :loading="isLoading"
+                    class="w-fit max-h-[48px] h-[36px] px-6 dark:text-white"
+                    :disabled="
+                        (isSetPurchasePrice ? !purchasePrice : !purchaseAmount) ||
+                        isLoading ||
+                        (evmMemo && evmChainAddress === '')
+                    "
+                    @click="buy"
+                    >Buy token</UButton
                 >
-                    <template #decrement>
-                        <AppSpinner v-if="isPriceLoading" :size="2" class="ml-2" />
-                        <span v-else />
-                    </template>
-
-                    <template #increment>
-                        <span class="px-3">{{ convertTokenIfAvailableWithFormatting(icoInfo.data.costMint) }}</span>
-                    </template>
-                </UInputNumber>
-            </UFormField>
-            <UFormField v-if="evmMemo" required label="EVM Chain Address">
-                <UInput
-                    class="w-full text-center"
-                    v-model="evmChainAddress"
-                />
-            </UFormField>
-            <UButton
-                :class="!amount || (isLoading && 'cursor-not-allowed')"
-                :loading="isLoading"
-                class="w-fit max-h-[48px] h-[36px] px-6 dark:text-white"
-                :disabled="!amount || isLoading || (evmMemo && evmChainAddress === '')"
-                @click="buy"
-                >Buy token</UButton
-            >
+            </div>
         </div>
 
         <div
@@ -232,9 +316,9 @@
             <p class="text-sm text-black/60 dark:text-white/50 mb-2">Bonus activation progress</p>
             <UProgress v-model="bonusProgressValue" />
 
-            <p v-if="!amount || amount < tokensToPurchase" class="text-sm mt-2 text-primary-500">
+            <p v-if="!purchaseAmount || purchaseAmount < tokensToPurchase" class="text-sm mt-2 text-primary-500">
                 You need
-                {{ Intl.NumberFormat('en-us', { style: 'decimal' }).format(tokensToPurchase - (amount ?? 0)) }}
+                {{ Intl.NumberFormat('en-us', { style: 'decimal' }).format(tokensToPurchase - (purchaseAmount ?? 0)) }}
                 tokens more to activate the bonus.
             </p>
 
@@ -242,7 +326,7 @@
                 You will receive
                 {{
                     Intl.NumberFormat('en-us', { style: 'decimal' }).format(
-                        amount * (icoInfo.data.bonusPercentage / 100 / 100),
+                        purchaseAmount * (icoInfo.data.bonusPercentage / 100 / 100),
                     )
                 }}
                 bonus tokens!

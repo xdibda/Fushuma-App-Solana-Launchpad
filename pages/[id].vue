@@ -94,12 +94,17 @@
                         :ico-pot="icoPot"
                         :evm-memo="launchpadData?.evmAddressMemo"
                         :status="status.status"
+                        :current-price="currentPrice"
                         @fetch:data="fetchData"
                         @fetch:purchases="fetchUserPurchases"
                     />
 
                     <div class="bg-white-50 mt-9 grid grid-cols-1 md:grid-cols-3 w-full gap-6 md:gap-3">
-                        <AppTokensAmountCard :ico-info="icoInfo" :ico-pot="icoPot" :status="status.status" />
+                        <AppTokensAmountCard
+                            :current-price="currentPrice"
+                            :ico-info="icoInfo"
+                            :status="status.status"
+                        />
                         <AppVestingTokensCard :ico-info="icoInfo" />
                         <AppBonusTokensCard :ico-info="icoInfo" />
                     </div>
@@ -130,7 +135,7 @@
     import AppBonusTokensCard from '~/components/AppBonusTokensCard.vue';
     import AppVestingTokensCard from '~/components/AppVestingTokensCard.vue';
     import { Metaplex } from '~/js/metaplex';
-    import { getStatus } from '~/js/utils';
+    import { getStatus, IcoStatus } from '~/js/utils';
     import launchpads from '@/assets/launchpads.json';
 
     const { publicKey } = useWallet();
@@ -163,6 +168,29 @@
             icoInfo.value.data?.endDate,
         );
     });
+
+    const currentPrice = ref(new DataWrapper<number>());
+    const availableAmount = ref(new DataWrapper<number>());
+
+    const fetchCurrentPrice = async () => {
+        if (
+            (icoInfo.value.data && status.value.status === IcoStatus.Live) ||
+            status.value.status === IcoStatus.Upcoming
+        ) {
+            try {
+                const { value, availableAmount: aa } = await SolanaIcoLaunchpad.getPurchaseAmount({
+                    icoPot: new web3.PublicKey(icoPot.value),
+                    amount: icoInfo.value.data!.icoDecimals,
+                });
+
+                currentPrice.value.setData(value / icoInfo.value.data!.icoDecimals);
+                availableAmount.value.setData(aa / icoInfo.value.data!.icoDecimals);
+            } catch (e) {
+                console.error(e);
+                currentPrice.value.setError();
+            }
+        }
+    };
 
     const fetchUserPurchases = async () => {
         if (publicKey.value) {
@@ -211,6 +239,8 @@
                 i.endDate *= 1000;
 
                 icoInfo.value.setData(i);
+
+                await fetchCurrentPrice();
             } catch (e) {
                 console.log(e);
             }

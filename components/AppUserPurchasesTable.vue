@@ -45,9 +45,6 @@
     const UButton = resolveComponent('UButton');
 
     const isCliffActive = (buyDate: string) => {
-        console.log(buyDate);
-        console.log(ico?.cliffPeriod);
-        console.log(Date.now());
         return new Date(buyDate + (ico?.cliffPeriod ?? 0) * 1000).getTime() > Date.now();
     };
 
