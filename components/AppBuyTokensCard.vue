@@ -32,7 +32,7 @@
 
     const isLoading = ref();
     const isPriceLoading = ref();
-    const isSetPurchasePrice = ref<boolean>(false);
+    const isSetPurchasePrice = ref<boolean>(true);
 
     const purchaseAmount = ref<number>();
     const purchasePrice = ref<number>();
